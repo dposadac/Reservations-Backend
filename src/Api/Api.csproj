@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Ceiba.LiveEvent.Reservations.Api</RootNamespace>
+    <AssemblyName>Ceiba.LiveEvent.Reservations.Api</AssemblyName>
+    <!-- Genera el XML de documentación para alimentar OpenAPI con los comentarios /// -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- 1591: no exigir comentarios XML en todos los miembros públicos -->
+    <NoWarn>$(NoWarn);1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.4" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.2.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Application\Application.csproj" />
+    <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Application\Application.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- IConfiguration y IServiceCollection llegan transitivamente vía EF Core. -->
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.2" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Ceiba.LiveEvent.Reservations.Infrastructure</RootNamespace>
+    <AssemblyName>Ceiba.LiveEvent.Reservations.Infrastructure</AssemblyName>
+  </PropertyGroup>
+
+</Project>

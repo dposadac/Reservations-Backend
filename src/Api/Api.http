@@ -1,0 +1,52 @@
+@Api_HostAddress = http://localhost:5103
+
+### Listar todas las tareas
+GET {{Api_HostAddress}}/api/todoitems
+Accept: application/json
+
+### Listar solo las tareas pendientes
+GET {{Api_HostAddress}}/api/todoitems?onlyPending=true
+Accept: application/json
+
+### Crear una tarea
+# @name crear
+POST {{Api_HostAddress}}/api/todoitems
+Content-Type: application/json
+
+{
+  "title": "Reservar el auditorio principal",
+  "description": "Para el evento de lanzamiento",
+  "priority": 3
+}
+
+### Obtener una tarea por id (usa el id devuelto por la creación)
+GET {{Api_HostAddress}}/api/todoitems/{{crear.response.body.$}}
+Accept: application/json
+
+### Actualizar una tarea
+PUT {{Api_HostAddress}}/api/todoitems/{{crear.response.body.$}}
+Content-Type: application/json
+
+{
+  "id": "{{crear.response.body.$}}",
+  "title": "Reservar el auditorio principal (actualizado)",
+  "description": "Cambio de aforo",
+  "priority": 2
+}
+
+### Marcar como completada
+POST {{Api_HostAddress}}/api/todoitems/{{crear.response.body.$}}/complete
+
+### Eliminar una tarea
+DELETE {{Api_HostAddress}}/api/todoitems/{{crear.response.body.$}}
+
+### Validación: título vacío -> 400 Bad Request (ProblemDetails)
+POST {{Api_HostAddress}}/api/todoitems
+Content-Type: application/json
+
+{
+  "title": "",
+  "priority": 1
+}
+
+###

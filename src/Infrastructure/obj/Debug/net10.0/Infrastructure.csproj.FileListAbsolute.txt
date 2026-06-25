@@ -1,0 +1,17 @@
+C:\Users\Usuario\Documents\Pruebas\Ceiba\Ceiba.LiveEvent.Reservations\src\Infrastructure\bin\Debug\net10.0\Ceiba.LiveEvent.Reservations.Infrastructure.deps.json
+C:\Users\Usuario\Documents\Pruebas\Ceiba\Ceiba.LiveEvent.Reservations\src\Infrastructure\bin\Debug\net10.0\Ceiba.LiveEvent.Reservations.Infrastructure.dll
+C:\Users\Usuario\Documents\Pruebas\Ceiba\Ceiba.LiveEvent.Reservations\src\Infrastructure\bin\Debug\net10.0\Ceiba.LiveEvent.Reservations.Infrastructure.pdb
+C:\Users\Usuario\Documents\Pruebas\Ceiba\Ceiba.LiveEvent.Reservations\src\Infrastructure\bin\Debug\net10.0\Ceiba.LiveEvent.Reservations.Application.dll
+C:\Users\Usuario\Documents\Pruebas\Ceiba\Ceiba.LiveEvent.Reservations\src\Infrastructure\bin\Debug\net10.0\Ceiba.LiveEvent.Reservations.Domain.dll
+C:\Users\Usuario\Documents\Pruebas\Ceiba\Ceiba.LiveEvent.Reservations\src\Infrastructure\bin\Debug\net10.0\Ceiba.LiveEvent.Reservations.Application.pdb
+C:\Users\Usuario\Documents\Pruebas\Ceiba\Ceiba.LiveEvent.Reservations\src\Infrastructure\bin\Debug\net10.0\Ceiba.LiveEvent.Reservations.Domain.pdb
+C:\Users\Usuario\Documents\Pruebas\Ceiba\Ceiba.LiveEvent.Reservations\src\Infrastructure\obj\Debug\net10.0\Infrastructure.csproj.AssemblyReference.cache
+C:\Users\Usuario\Documents\Pruebas\Ceiba\Ceiba.LiveEvent.Reservations\src\Infrastructure\obj\Debug\net10.0\Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Usuario\Documents\Pruebas\Ceiba\Ceiba.LiveEvent.Reservations\src\Infrastructure\obj\Debug\net10.0\Infrastructure.AssemblyInfoInputs.cache
+C:\Users\Usuario\Documents\Pruebas\Ceiba\Ceiba.LiveEvent.Reservations\src\Infrastructure\obj\Debug\net10.0\Infrastructure.AssemblyInfo.cs
+C:\Users\Usuario\Documents\Pruebas\Ceiba\Ceiba.LiveEvent.Reservations\src\Infrastructure\obj\Debug\net10.0\Infrastructure.csproj.CoreCompileInputs.cache
+C:\Users\Usuario\Documents\Pruebas\Ceiba\Ceiba.LiveEvent.Reservations\src\Infrastructure\obj\Debug\net10.0\Infrastr.15EFFBFE.Up2Date
+C:\Users\Usuario\Documents\Pruebas\Ceiba\Ceiba.LiveEvent.Reservations\src\Infrastructure\obj\Debug\net10.0\Ceiba.LiveEvent.Reservations.Infrastructure.dll
+C:\Users\Usuario\Documents\Pruebas\Ceiba\Ceiba.LiveEvent.Reservations\src\Infrastructure\obj\Debug\net10.0\refint\Ceiba.LiveEvent.Reservations.Infrastructure.dll
+C:\Users\Usuario\Documents\Pruebas\Ceiba\Ceiba.LiveEvent.Reservations\src\Infrastructure\obj\Debug\net10.0\Ceiba.LiveEvent.Reservations.Infrastructure.pdb
+C:\Users\Usuario\Documents\Pruebas\Ceiba\Ceiba.LiveEvent.Reservations\src\Infrastructure\obj\Debug\net10.0\ref\Ceiba.LiveEvent.Reservations.Infrastructure.dll
