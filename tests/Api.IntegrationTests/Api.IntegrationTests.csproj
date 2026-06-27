@@ -26,9 +26,9 @@
     <ProjectReference Include="..\..\src\Api\Api.csproj" />
   </ItemGroup>
 
-  <!-- Script Database First copiado al output para aplicarlo sobre el contenedor. -->
+  <!-- Scripts Database First copiados al output para aplicarlos sobre el contenedor. -->
   <ItemGroup>
-    <Content Include="..\..\db\scripts\07_create_table_todo_items.sql" Link="db\07_create_table_todo_items.sql">
+    <Content Include="..\..\db\scripts\*.sql" Link="db\%(Filename)%(Extension)">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

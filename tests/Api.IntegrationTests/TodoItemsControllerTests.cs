@@ -34,7 +34,7 @@ public class TodoItemsControllerTests
         var getResponse = await _client.GetAsync($"/api/todoitems/{id}");
         getResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var dto = await getResponse.Content.ReadFromJsonAsync<TodoItemDto>();
+        var dto = await getResponse.Content.ReadFromJsonAsync<TodoItemDto>(TestJson.Options);
         dto.Should().NotBeNull();
         dto!.Title.Should().Be("Reservar catering");
         dto.Priority.Should().Be(PriorityLevel.High);
@@ -49,7 +49,7 @@ public class TodoItemsControllerTests
         var completeResponse = await _client.PostAsync($"/api/todoitems/{id}/complete", null);
         completeResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
-        var dto = await _client.GetFromJsonAsync<TodoItemDto>($"/api/todoitems/{id}");
+        var dto = await _client.GetFromJsonAsync<TodoItemDto>($"/api/todoitems/{id}", TestJson.Options);
         dto!.IsCompleted.Should().BeTrue();
         dto.CompletedAt.Should().NotBeNull();
     }
@@ -89,7 +89,7 @@ public class TodoItemsControllerTests
     {
         await CreateTodoAsync("Tarea listada");
 
-        var items = await _client.GetFromJsonAsync<List<TodoItemDto>>("/api/todoitems");
+        var items = await _client.GetFromJsonAsync<List<TodoItemDto>>("/api/todoitems", TestJson.Options);
 
         items.Should().NotBeNull();
         items!.Should().Contain(i => i.Title == "Tarea listada");
