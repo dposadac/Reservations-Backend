@@ -11,12 +11,6 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.4" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Reservations\Commands\CreateReservation\" />
-    <Folder Include="Reservations\Commands\CancelReservation\" />
-    <Folder Include="Reservations\EventHandlers\" />
-  </ItemGroup>
-
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
