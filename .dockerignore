@@ -1,0 +1,21 @@
+# Artefactos de build
+**/bin/
+**/obj/
+**/out/
+**/publish/
+
+# Control de versiones / IDE
+.git/
+.github/
+.vs/
+.vscode/
+**/*.user
+
+# Pruebas (no se necesitan para construir la imagen de la API)
+tests/
+
+# Docker / docs
+Dockerfile
+.dockerignore
+docker-compose*.yml
+**/*.md

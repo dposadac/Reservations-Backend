@@ -22,4 +22,12 @@
     <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
   </ItemGroup>
 
+  <!-- Catálogo de mensajes copiado junto al binario para cargarlo en ejecución.
+       (El Web SDK ya lo incluye como Content; aquí solo se ajusta la copia.) -->
+  <ItemGroup>
+    <Content Update="Resources\messages.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>

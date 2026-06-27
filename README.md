@@ -1,82 +1,154 @@
 # Ceiba.LiveEvent.Reservations
 
-Línea base en **.NET 10** que implementa **Clean Architecture + DDD + CQRS** con
-**MediatR**, validaciones con **FluentValidation** y persistencia con
-**EF Core + PostgreSQL (Npgsql)** en modo **Database First**. Incluye un ejemplo
-completo de tipo **TODO** (`TodoItem`) como referencia, pruebas unitarias con
-**xUnit + Moq** y pruebas de integración del controlador con **Testcontainers**.
+Backend de **reservas para eventos en vivo** construido en **.NET 10** sobre
+**Clean Architecture + DDD + CQRS** con **MediatR**, validaciones con
+**FluentValidation** y persistencia con **EF Core + PostgreSQL (Npgsql)** en modo
+**Database First**. El dominio cubre tres áreas: **tablas maestras** (catálogos),
+**eventos** y **reservas**, con sus reglas de negocio (RF/RN) encapsuladas en el dominio.
 
-## Estructura de la solución
+Incluye pruebas unitarias con **xUnit + Moq** y pruebas de integración de los
+controladores con **Testcontainers** (PostgreSQL efímero).
 
-```
-Ceiba.LiveEvent.Reservations.slnx
-├── db
-│   ├── scripts           -> Scripts SQL Database First (creación de esquema, seed).
-│   └── README.md         -> Cómo aplicar los scripts.
-├── src
-│   ├── Domain            -> Núcleo del dominio (DDD). Sin dependencias de framework.
-│   ├── Application       -> Casos de uso (CQRS). Commands/Queries, handlers, validators.
-│   ├── Infrastructure    -> EF Core + PostgreSQL (DbContext, repositorio). Database First.
-│   └── Api               -> Presentación. Controladores ASP.NET Core + MediatR.
-└── tests
-    ├── Domain.Tests        -> Pruebas de invariantes del dominio (xUnit).
-    ├── Application.Tests   -> Pruebas de handlers/validadores (xUnit + Moq).
-    └── Api.IntegrationTests-> Pruebas del controlador end-to-end (Testcontainers/PostgreSQL).
-```
+## Tecnologías utilizadas
 
-### Regla de dependencias (Clean Architecture)
+| Área              | Tecnología                                                              |
+|-------------------|-------------------------------------------------------------------------|
+| Runtime / lenguaje| .NET 10 / C#                                                            |
+| API               | ASP.NET Core (controladores)                                            |
+| Mediación / CQRS  | MediatR (comandos, consultas, eventos de dominio, pipeline behaviors)   |
+| Validación        | FluentValidation                                                        |
+| Persistencia      | EF Core + Npgsql (PostgreSQL), **Database First** (sin migraciones EF)  |
+| Base de datos     | PostgreSQL 16                                                           |
+| Documentación API | OpenAPI 3.1 nativo (`Microsoft.AspNetCore.OpenApi`) + Swagger UI        |
+| Pruebas           | xUnit, Moq, Testcontainers                                              |
+| Contenedores / CD | Docker, Docker Compose, GitHub Actions, Google Cloud Run + Cloud SQL    |
+
+## Arquitectura elegida y justificación
+
+Se eligió **Clean Architecture** combinada con **DDD** y **CQRS** porque el problema
+es de **reglas de negocio** (aforos, ventanas horarias, límites de compra,
+penalizaciones), no de simple CRUD. Estos patrones mantienen esas reglas en un núcleo
+aislado y comprobable.
 
 ```
 Api ──> Application ──> Domain
 Api ──> Infrastructure ──> Application ──> Domain
 ```
 
-El `Domain` no conoce a ninguna otra capa. Las dependencias apuntan siempre hacia
-adentro; la inversión de control se logra con la interfaz `ITodoRepository`
-(definida en `Application`, implementada en `Infrastructure`).
+- **Domain**: núcleo del negocio, **sin dependencias de framework**. Las raíces de
+  agregado (`Event`, `Reservation`) tienen setters privados y métodos de comportamiento
+  que protegen sus invariantes y lanzan `DomainException` / `BusinessRuleException`.
+  Incluye *value objects* (`Email`, `ReservationCode`) y emite *eventos de dominio*.
+- **Application**: orquesta los casos de uso (CQRS). Cada acción es un `Command` o
+  `Query` con su `Handler`; las interfaces de repositorio (`IEventRepository`,
+  `IReservationRepository`, …) se **definen aquí** (inversión de dependencias).
+- **Infrastructure**: implementa los repositorios con EF Core y configura el mapeo
+  Database First (`ApplicationDbContext`, `*Configuration`).
+- **Api**: capa de presentación. Los controladores **solo orquestan**: validan la
+  entrada y delegan en MediatR.
 
-## Conceptos aplicados
+**Por qué este diseño:**
 
-- **DDD**: `TodoItem` es una *raíz de agregado* (`BaseEntity` / `BaseAuditableEntity`,
-  `IAggregateRoot`) con setters privados, métodos de comportamiento
-  (`Create`, `UpdateDetails`, `MarkAsComplete`, `Reopen`) e invariantes que lanzan
-  `DomainException`. Emite *eventos de dominio* (`TodoItemCreatedEvent`,
-  `TodoItemCompletedEvent`) que se despachan vía MediatR al guardar.
-- **CQRS + MediatR**: comandos (`CreateTodoItem`, `UpdateTodoItem`,
-  `CompleteTodoItem`, `DeleteTodoItem`) y consultas (`GetTodoItems`,
-  `GetTodoItemById`), cada uno con su handler.
-- **FluentValidation**: validadores por comando ejecutados automáticamente por el
-  `ValidationBehaviour` del pipeline de MediatR.
-- **Manejo de errores**: `GlobalExceptionHandler` traduce las excepciones a
-  respuestas `ProblemDetails` (400 validación/dominio, 404 no encontrado, 500).
+- **Las dependencias apuntan hacia adentro**: el dominio no conoce a EF Core ni a
+  ASP.NET, por lo que las reglas se prueban sin base de datos ni servidor.
+- **CQRS + MediatR** separan lectura y escritura y dejan un punto único para
+  *cross-cutting concerns* mediante *pipeline behaviors* (p. ej. `ValidationBehaviour`).
+- **DDD** evita modelos anémicos: la lógica vive junto a los datos que protege, lo que
+  hace explícitas e inviolables las reglas de negocio.
+- **Database First** encaja con un esquema versionado por SQL (catálogos maestros con
+  FKs), independiente del ciclo de vida de la aplicación.
 
-## Persistencia (EF Core + PostgreSQL, Database First)
+## Estructura de la solución
 
-El esquema se gestiona con los scripts SQL numerados de [`db/scripts`](db/README.md),
-**no con migraciones de EF Core**. El modelo (tablas, campos y relaciones en inglés)
-deriva del diagrama ER `db/Diagrama-ER-Events.jpg`:
+```
+Reservations-Backend.slnx
+├── db
+│   ├── scripts           -> Scripts SQL Database First (esquema + seeds de catálogos).
+│   ├── docker            -> initdb.sh: aplica los scripts al levantar Postgres en Docker.
+│   └── README.md         -> Modelo de datos y cómo aplicar los scripts.
+├── src
+│   ├── Domain            -> Núcleo del dominio (DDD): Events, Reservations, Venues, Common.
+│   ├── Application       -> Casos de uso (CQRS): Events, Reservations, Masters.
+│   ├── Infrastructure    -> EF Core + PostgreSQL (DbContext, configuraciones, repositorios).
+│   └── Api               -> Controladores ASP.NET Core + MediatR, OpenAPI, mensajes, jobs.
+└── tests
+    ├── Domain.Tests        -> Invariantes y reglas del dominio (xUnit).
+    ├── Application.Tests   -> Handlers y validadores (xUnit + Moq).
+    └── Api.IntegrationTests-> Controladores end-to-end (Testcontainers/PostgreSQL).
+```
 
-- **Tablas maestras**: `event_status`, `venue`, `event_type`, `reservation_status`.
-- **Tablas dependientes (FK)**: `event` (→ `venue`, `event_type`, `event_status`) y
-  `reservation` (→ `event`, `reservation_status`).
-- **Tabla de ejemplo**: `todo_items` (respalda el ejemplo TODO de la arquitectura).
+## Modelo de dominio
 
-Los scripts se ejecutan en orden numérico ascendente: primero la base de datos (`00`),
-luego las maestras (`01`–`04`), luego las dependientes (`05`–`06`) y finalmente la
-tabla de ejemplo (`07`–`08`). Detalle completo en [`db/README.md`](db/README.md).
+### Tablas maestras (catálogos, sin FKs)
 
-El `ApplicationDbContext` / `TodoItemConfiguration` solo mapean el modelo a las tablas
-existentes; el contexto añade auditoría (`created_at` / `last_modified_at`) y despacha
-los eventos de dominio al guardar. La cadena de conexión se configura en
-`src/Api/appsettings.json` → `ConnectionStrings:Postgres`.
+| Tabla                | Descripción                                          |
+|----------------------|------------------------------------------------------|
+| `event_status`       | Estados de un evento (activo, cancelado, completado).|
+| `event_type`         | Tipos de evento (catálogo).                          |
+| `venue`              | Lugares y su capacidad.                              |
+| `reservation_status` | Estados de una reserva (pendiente, confirmada, …).   |
 
-## Cómo ejecutar
+Se exponen en una sola respuesta a través del `MasterController` para alimentar
+formularios y selectores del frontend.
+
+### Eventos (`event`)
+
+Raíz de agregado `Event`. Encapsula la creación (RF-01) y las transiciones de estado
+(RN-06). Reglas destacadas:
+
+- **RN-01**: la capacidad del evento no puede superar la del lugar.
+- **RN-03**: en fin de semana no puede iniciar después de las 22:00.
+- Título 5–100 y descripción 10–500 caracteres; fechas coherentes y precio positivo.
+- Estado inicial *activo*; puede **cancelarse** o pasar a **completado** cuando finaliza
+  (job diario / endpoint `complete-finished`).
+
+### Reservas (`reservation`)
+
+Raíz de agregado `Reservation`. Encapsula creación (RF-03), confirmación de pago (RF-04)
+y cancelación (RF-05). Reglas destacadas:
+
+- **RN-04**: no se reserva si falta menos de 1 hora para el inicio.
+- **RF-03**: a menos de 24 h del inicio, máximo 5 entradas por transacción.
+- **RN-05**: eventos con precio > $100, máximo 10 entradas por transacción.
+- **RF-04**: al confirmar el pago se asigna un **código único** con formato `EV-######`.
+- **RN-07**: cancelar a menos de 48 h penaliza (las entradas se marcan como perdidas).
+
+El detalle completo del esquema, columnas, FKs y orden de ejecución de los scripts está
+en [`db/README.md`](db/README.md).
+
+## Cómo ejecutar el proyecto localmente
+
+### Requisitos
+
+- [.NET 10 SDK](https://dotnet.microsoft.com/)
+- [Docker](https://www.docker.com/) (para Postgres y para las pruebas de integración)
+- Opcional: cliente `psql` si aplicas los scripts a mano
+
+### Opción A — Todo con Docker Compose (recomendada)
+
+Levanta la API y PostgreSQL con el esquema Database First ya aplicado:
 
 ```powershell
-# 1. Levantar PostgreSQL (ejemplo con Docker)
+docker compose up --build
+```
+
+- API / Swagger: <http://localhost:8080/swagger>
+- PostgreSQL: `localhost:5432` (db `ceiba_reservations`, usuario/clave `postgres`/`postgres`)
+
+El esquema se aplica solo en el **primer** arranque (cuando el volumen está vacío). Para
+reaplicarlo desde cero:
+
+```powershell
+docker compose down -v; docker compose up --build
+```
+
+### Opción B — Postgres en Docker + API con dotnet
+
+```powershell
+# 1. Levantar PostgreSQL
 docker run --name ceiba-pg -e POSTGRES_PASSWORD=postgres -p 5432:5432 -d postgres:16-alpine
 
-# 2. Aplicar los scripts Database First en orden (ver db/README.md)
+# 2. Crear la base y aplicar los scripts en orden (ver db/README.md)
 $env:PGPASSWORD = "postgres"
 psql -h localhost -U postgres -d postgres -f db/scripts/00_create_database.sql
 Get-ChildItem db/scripts/*.sql | Where-Object Name -ne '00_create_database.sql' |
@@ -86,14 +158,23 @@ Get-ChildItem db/scripts/*.sql | Where-Object Name -ne '00_create_database.sql' 
 # 3. Compilar y ejecutar la API
 dotnet build
 dotnet run --project src/Api
+```
 
-# 4. Ejecutar las pruebas (los tests de integración requieren Docker)
+La cadena de conexión se configura en `src/Api/appsettings.json` →
+`ConnectionStrings:Postgres`.
+
+### Pruebas
+
+```powershell
 dotnet test
 ```
 
-Los ejemplos de peticiones están en `src/Api/Api.http`. Las pruebas de integración
-levantan su propio contenedor PostgreSQL efímero con Testcontainers y aplican el
-script Database First automáticamente, por lo que no usan tu base de datos local.
+Las pruebas de integración **requieren Docker**: levantan su propio contenedor
+PostgreSQL efímero con Testcontainers y aplican el esquema Database First
+automáticamente, por lo que no usan tu base de datos local. Los ejemplos de peticiones
+están en `src/Api/Api.http`.
+
+> Despliegue en CI/CD y Google Cloud Run: ver [`DEPLOYMENT.md`](DEPLOYMENT.md).
 
 ## Documentación de la API (Swagger / OpenAPI)
 
@@ -101,10 +182,10 @@ La API genera su documentación **OpenAPI 3.1** con el generador nativo de .NET 
 (`Microsoft.AspNetCore.OpenApi`) y la expone con **Swagger UI**
 (`Swashbuckle.AspNetCore.SwaggerUI`). Con la API en ejecución:
 
-| Recurso            | URL                                  |
-|--------------------|--------------------------------------|
-| Swagger UI         | `https://localhost:<puerto>/swagger` |
-| Documento OpenAPI  | `https://localhost:<puerto>/openapi/v1.json` |
+| Recurso            | URL                                          |
+|--------------------|----------------------------------------------|
+| Swagger UI         | `http://localhost:<puerto>/swagger`          |
+| Documento OpenAPI  | `http://localhost:<puerto>/openapi/v1.json`  |
 
 ### Configuración transversal, mantenible y escalable
 
@@ -142,11 +223,28 @@ Ventajas del diseño:
 
 ## Endpoints
 
-| Método | Ruta                              | Descripción                  |
-|--------|-----------------------------------|------------------------------|
-| GET    | `/api/todoitems`                  | Listar (filtro `onlyPending`) |
-| GET    | `/api/todoitems/{id}`             | Obtener por id               |
-| POST   | `/api/todoitems`                  | Crear                        |
-| PUT    | `/api/todoitems/{id}`             | Actualizar                   |
-| POST   | `/api/todoitems/{id}/complete`    | Completar                    |
-| DELETE | `/api/todoitems/{id}`             | Eliminar                     |
+### Eventos
+
+| Método | Ruta                              | Descripción                          |
+|--------|-----------------------------------|--------------------------------------|
+| GET    | `/api/event`                      | Listar eventos (filtros opcionales)  |
+| GET    | `/api/event/{id}`                 | Obtener un evento por id             |
+| GET    | `/api/event/{id}/occupancy`       | Reporte de ocupación (RF-06)         |
+| POST   | `/api/event`                      | Crear evento (RF-01)                 |
+| POST   | `/api/event/{id}/cancel`          | Cancelar evento (RN-06)              |
+| POST   | `/api/event/complete-finished`    | Completar eventos finalizados (RN-06)|
+
+### Reservas
+
+| Método | Ruta                                | Descripción                          |
+|--------|-------------------------------------|--------------------------------------|
+| GET    | `/api/reservation`                  | Listar reservas (filtros opcionales) |
+| POST   | `/api/reservation`                  | Reservar entradas (RF-03)            |
+| POST   | `/api/reservation/{id}/confirm`     | Confirmar pago y emitir código (RF-04)|
+| POST   | `/api/reservation/{id}/cancel`      | Cancelar reserva (RF-05 / RN-07)     |
+
+### Maestras
+
+| Método | Ruta            | Descripción                                              |
+|--------|-----------------|---------------------------------------------------------|
+| GET    | `/api/master`   | Tipos y estados de evento, estados de reserva y lugares |

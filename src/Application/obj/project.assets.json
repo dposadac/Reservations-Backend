@@ -311,11 +311,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Usuario\\Documents\\Pruebas\\Ceiba\\Ceiba.LiveEvent.Reservations\\src\\Application\\Application.csproj",
+      "projectUniqueName": "C:\\Users\\Usuario\\Documents\\Pruebas\\Ceiba\\Reservations-Backend\\src\\Application\\Application.csproj",
       "projectName": "Ceiba.LiveEvent.Reservations.Application",
-      "projectPath": "C:\\Users\\Usuario\\Documents\\Pruebas\\Ceiba\\Ceiba.LiveEvent.Reservations\\src\\Application\\Application.csproj",
+      "projectPath": "C:\\Users\\Usuario\\Documents\\Pruebas\\Ceiba\\Reservations-Backend\\src\\Application\\Application.csproj",
       "packagesPath": "C:\\Users\\Usuario\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Usuario\\Documents\\Pruebas\\Ceiba\\Ceiba.LiveEvent.Reservations\\src\\Application\\obj\\",
+      "outputPath": "C:\\Users\\Usuario\\Documents\\Pruebas\\Ceiba\\Reservations-Backend\\src\\Application\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -337,8 +337,8 @@
         "net10.0": {
           "targetAlias": "net10.0",
           "projectReferences": {
-            "C:\\Users\\Usuario\\Documents\\Pruebas\\Ceiba\\Ceiba.LiveEvent.Reservations\\src\\Domain\\Domain.csproj": {
-              "projectPath": "C:\\Users\\Usuario\\Documents\\Pruebas\\Ceiba\\Ceiba.LiveEvent.Reservations\\src\\Domain\\Domain.csproj"
+            "C:\\Users\\Usuario\\Documents\\Pruebas\\Ceiba\\Reservations-Backend\\src\\Domain\\Domain.csproj": {
+              "projectPath": "C:\\Users\\Usuario\\Documents\\Pruebas\\Ceiba\\Reservations-Backend\\src\\Domain\\Domain.csproj"
             }
           }
         }

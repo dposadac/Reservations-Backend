@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Ceiba.LiveEvent.Reservations.Domain")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+388ab5f4887d51e3881d7db8bd2d7b849466ccbe")]
 [assembly: System.Reflection.AssemblyProductAttribute("Ceiba.LiveEvent.Reservations.Domain")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Ceiba.LiveEvent.Reservations.Domain")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

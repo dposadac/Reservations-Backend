@@ -1,3 +1,4 @@
+using Ceiba.LiveEvent.Reservations.Api.Messages;
 using Ceiba.LiveEvent.Reservations.Application.Common.Exceptions;
 using Ceiba.LiveEvent.Reservations.Domain.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
@@ -7,18 +8,26 @@ namespace Ceiba.LiveEvent.Reservations.Api.Common;
 
 /// <summary>
 /// Traduce las excepciones de la aplicación y el dominio a respuestas
-/// <see cref="ProblemDetails"/> con el código HTTP adecuado.
+/// <see cref="ProblemDetails"/> con el código HTTP adecuado. Los títulos provienen del
+/// catálogo de mensajes (<see cref="IMessageService"/>) y el detalle incluye el mensaje
+/// del error para que el cliente sepa qué ocurrió.
 /// </summary>
 public sealed class GlobalExceptionHandler : IExceptionHandler
 {
     private readonly IProblemDetailsService _problemDetailsService;
+    private readonly IMessageService _messages;
+    private readonly IHostEnvironment _environment;
     private readonly ILogger<GlobalExceptionHandler> _logger;
 
     public GlobalExceptionHandler(
         IProblemDetailsService problemDetailsService,
+        IMessageService messages,
+        IHostEnvironment environment,
         ILogger<GlobalExceptionHandler> logger)
     {
         _problemDetailsService = problemDetailsService;
+        _messages = messages;
+        _environment = environment;
         _logger = logger;
     }
 
@@ -44,29 +53,38 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
         });
     }
 
-    private static ProblemDetails MapException(Exception exception) => exception switch
+    private ProblemDetails MapException(Exception exception) => exception switch
     {
         ValidationException validation => new ValidationProblemDetails(validation.Errors)
         {
             Status = StatusCodes.Status400BadRequest,
-            Title = "Error de validación."
+            Title = _messages.Get("error.validation")
         },
         NotFoundException notFound => new ProblemDetails
         {
             Status = StatusCodes.Status404NotFound,
-            Title = "Recurso no encontrado.",
+            Title = _messages.Get("error.notFound"),
             Detail = notFound.Message
+        },
+        // Regla de negocio (RN) con clave de mensaje: el texto se resuelve del catálogo.
+        BusinessRuleException rule => new ProblemDetails
+        {
+            Status = StatusCodes.Status400BadRequest,
+            Title = _messages.Get("error.businessRule"),
+            Detail = _messages.Get(rule.MessageKey, rule.Args)
         },
         DomainException domain => new ProblemDetails
         {
             Status = StatusCodes.Status400BadRequest,
-            Title = "Regla de negocio violada.",
+            Title = _messages.Get("error.businessRule"),
             Detail = domain.Message
         },
         _ => new ProblemDetails
         {
             Status = StatusCodes.Status500InternalServerError,
-            Title = "Se ha producido un error interno."
+            Title = _messages.Get("error.unexpected"),
+            // El mensaje técnico solo se expone en desarrollo para no filtrar detalles internos.
+            Detail = _environment.IsDevelopment() ? exception.Message : null
         }
     };
 }

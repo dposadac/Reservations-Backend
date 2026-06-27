@@ -1,0 +1,42 @@
+# =============================================================================
+# Entorno local: API + PostgreSQL con el esquema Database First ya aplicado.
+#   docker compose up --build
+#   API:     http://localhost:8080/swagger
+#   Postgres: localhost:5432  (ceiba_reservations / postgres / postgres)
+# =============================================================================
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ceiba_reservations
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # Scripts Database First (solo lectura) + inicializador que los aplica.
+      - ./db/scripts:/db-scripts:ro
+      - ./db/docker/initdb.sh:/docker-entrypoint-initdb.d/initdb.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ceiba_reservations"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      # Development habilita Swagger en local; la cadena de conexión la fuerza la variable.
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__Postgres: "Host=postgres;Port=5432;Database=ceiba_reservations;Username=postgres;Password=postgres"
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  pgdata:

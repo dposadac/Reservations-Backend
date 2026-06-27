@@ -1,6 +1,9 @@
 using System.Reflection;
 using Ceiba.LiveEvent.Reservations.Domain.Common;
+using Ceiba.LiveEvent.Reservations.Domain.Events;
+using Ceiba.LiveEvent.Reservations.Domain.Reservations;
 using Ceiba.LiveEvent.Reservations.Domain.Todos;
+using Ceiba.LiveEvent.Reservations.Domain.Venues;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,6 +24,18 @@ public sealed class ApplicationDbContext : DbContext
         => _publisher = publisher;
 
     public DbSet<TodoItem> TodoItems => Set<TodoItem>();
+
+    public DbSet<Venue> Venues => Set<Venue>();
+
+    public DbSet<EventTypeLookup> EventTypes => Set<EventTypeLookup>();
+
+    public DbSet<EventStatusLookup> EventStatuses => Set<EventStatusLookup>();
+
+    public DbSet<ReservationStatusLookup> ReservationStatuses => Set<ReservationStatusLookup>();
+
+    public DbSet<Event> Events => Set<Event>();
+
+    public DbSet<Reservation> Reservations => Set<Reservation>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

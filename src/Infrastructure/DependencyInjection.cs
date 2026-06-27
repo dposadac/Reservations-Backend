@@ -1,4 +1,5 @@
 using Ceiba.LiveEvent.Reservations.Application.Common.Interfaces;
+using Ceiba.LiveEvent.Reservations.Infrastructure.Common;
 using Ceiba.LiveEvent.Reservations.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -22,7 +23,15 @@ public static class DependencyInjection
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseNpgsql(connectionString));
 
+        services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
+
         services.AddScoped<ITodoRepository, EfTodoRepository>();
+        services.AddScoped<IVenueRepository, EfVenueRepository>();
+        services.AddScoped<IEventTypeRepository, EfEventTypeRepository>();
+        services.AddScoped<IEventStatusRepository, EfEventStatusRepository>();
+        services.AddScoped<IReservationStatusRepository, EfReservationStatusRepository>();
+        services.AddScoped<IEventRepository, EfEventRepository>();
+        services.AddScoped<IReservationRepository, EfReservationRepository>();
 
         return services;
     }

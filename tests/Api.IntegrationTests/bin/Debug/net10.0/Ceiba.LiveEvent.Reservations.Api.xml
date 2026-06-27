@@ -4,11 +4,103 @@
         <name>Ceiba.LiveEvent.Reservations.Api</name>
     </assembly>
     <members>
+        <member name="T:Ceiba.LiveEvent.Reservations.Api.BackgroundJobs.EventCompletionBackgroundService">
+            <summary>
+            Job en segundo plano que ejecuta RN-06 a diario: marca como "completado" los eventos
+            cuya fecha de fin ya pasó. Se ejecuta una vez al arrancar y luego cada 24 horas.
+            </summary>
+            <remarks>
+            En despliegues que escalan a cero (p. ej. Cloud Run) este temporizador no es fiable;
+            en ese caso conviene invocar el endpoint <c>POST /api/event/complete-finished</c> desde
+            un planificador externo (Cloud Scheduler). La lógica es la misma.
+            </remarks>
+        </member>
+        <member name="T:Ceiba.LiveEvent.Reservations.Api.Common.ApiResponse`1">
+            <summary>
+            Envoltura estándar para las respuestas de los endpoints de comando: un mensaje de
+            proceso (tomado del catálogo) y, opcionalmente, los datos resultantes.
+            </summary>
+            <typeparam name="T">Tipo de la carga útil (por ejemplo, el id generado).</typeparam>
+            <remarks>
+            El parámetro <c>Data</c> no lleva valor por defecto a propósito: con un genérico sin
+            restricción, <c>= default</c> rompe la generación del esquema OpenAPI al cerrar sobre un
+            tipo de valor (p. ej. <see cref="T:System.Guid"/>). Use <see cref="M:Ceiba.LiveEvent.Reservations.Api.Common.ApiResponse`1.Of(System.String,`0)"/> para omitir los datos.
+            </remarks>
+        </member>
+        <member name="M:Ceiba.LiveEvent.Reservations.Api.Common.ApiResponse`1.#ctor(System.String,`0)">
+            <summary>
+            Envoltura estándar para las respuestas de los endpoints de comando: un mensaje de
+            proceso (tomado del catálogo) y, opcionalmente, los datos resultantes.
+            </summary>
+            <typeparam name="T">Tipo de la carga útil (por ejemplo, el id generado).</typeparam>
+            <remarks>
+            El parámetro <c>Data</c> no lleva valor por defecto a propósito: con un genérico sin
+            restricción, <c>= default</c> rompe la generación del esquema OpenAPI al cerrar sobre un
+            tipo de valor (p. ej. <see cref="T:System.Guid"/>). Use <see cref="M:Ceiba.LiveEvent.Reservations.Api.Common.ApiResponse`1.Of(System.String,`0)"/> para omitir los datos.
+            </remarks>
+        </member>
         <member name="T:Ceiba.LiveEvent.Reservations.Api.Common.GlobalExceptionHandler">
             <summary>
             Traduce las excepciones de la aplicación y el dominio a respuestas
-            <see cref="T:Microsoft.AspNetCore.Mvc.ProblemDetails"/> con el código HTTP adecuado.
+            <see cref="T:Microsoft.AspNetCore.Mvc.ProblemDetails"/> con el código HTTP adecuado. Los títulos provienen del
+            catálogo de mensajes (<see cref="T:Ceiba.LiveEvent.Reservations.Api.Messages.IMessageService"/>) y el detalle incluye el mensaje
+            del error para que el cliente sepa qué ocurrió.
             </summary>
+        </member>
+        <member name="T:Ceiba.LiveEvent.Reservations.Api.Controllers.EventController">
+            <summary>
+            Endpoints de gestión de eventos. El controlador solo orquesta: delega toda la
+            lógica a la capa de aplicación a través de MediatR.
+            </summary>
+        </member>
+        <member name="M:Ceiba.LiveEvent.Reservations.Api.Controllers.EventController.GetAll(Ceiba.LiveEvent.Reservations.Application.Events.Queries.GetEvents.GetEventsQuery,System.Threading.CancellationToken)">
+            <summary>Lista eventos con filtros opcionales (RF-02).</summary>
+        </member>
+        <member name="M:Ceiba.LiveEvent.Reservations.Api.Controllers.EventController.GetById(System.Guid,System.Threading.CancellationToken)">
+            <summary>Obtiene un evento por su identificador.</summary>
+        </member>
+        <member name="M:Ceiba.LiveEvent.Reservations.Api.Controllers.EventController.GetOccupancy(System.Guid,System.Threading.CancellationToken)">
+            <summary>Reporte de ocupación de un evento (RF-06). Se invoca por POST enviando el id en la ruta.</summary>
+        </member>
+        <member name="M:Ceiba.LiveEvent.Reservations.Api.Controllers.EventController.Create(Ceiba.LiveEvent.Reservations.Application.Events.Commands.CreateEvent.CreateEventCommand,System.Threading.CancellationToken)">
+            <summary>Crea un evento (RF-01).</summary>
+        </member>
+        <member name="M:Ceiba.LiveEvent.Reservations.Api.Controllers.EventController.Cancel(System.Guid,System.Threading.CancellationToken)">
+            <summary>Cancela un evento (RN-06).</summary>
+        </member>
+        <member name="M:Ceiba.LiveEvent.Reservations.Api.Controllers.EventController.CompleteFinished(System.Threading.CancellationToken)">
+            <summary>
+            Marca como "completado" los eventos cuya fecha de fin ya pasó (RN-06). Pensado para
+            ejecutarse a diario: lo invoca el job en segundo plano y también puede dispararse aquí
+            (p. ej. desde un scheduler externo como Cloud Scheduler).
+            </summary>
+        </member>
+        <member name="T:Ceiba.LiveEvent.Reservations.Api.Controllers.MasterController">
+            <summary>
+            Endpoint único de tablas maestras. Devuelve, en una sola respuesta, los tipos de
+            evento, estados de evento, estados de reserva y lugares.
+            </summary>
+        </member>
+        <member name="M:Ceiba.LiveEvent.Reservations.Api.Controllers.MasterController.GetAll(System.Threading.CancellationToken)">
+            <summary>Devuelve todas las tablas maestras (sin filtros).</summary>
+        </member>
+        <member name="T:Ceiba.LiveEvent.Reservations.Api.Controllers.ReservationController">
+            <summary>
+            Endpoints de gestión de reservas. El controlador solo orquesta: delega toda la
+            lógica a la capa de aplicación a través de MediatR.
+            </summary>
+        </member>
+        <member name="M:Ceiba.LiveEvent.Reservations.Api.Controllers.ReservationController.GetAll(Ceiba.LiveEvent.Reservations.Application.Reservations.Queries.GetReservations.GetReservationsQuery,System.Threading.CancellationToken)">
+            <summary>Lista reservas con filtros opcionales por evento y estado.</summary>
+        </member>
+        <member name="M:Ceiba.LiveEvent.Reservations.Api.Controllers.ReservationController.Create(Ceiba.LiveEvent.Reservations.Application.Reservations.Commands.CreateReservation.CreateReservationCommand,System.Threading.CancellationToken)">
+            <summary>Reserva entradas de un evento (RF-03).</summary>
+        </member>
+        <member name="M:Ceiba.LiveEvent.Reservations.Api.Controllers.ReservationController.Confirm(System.Guid,System.Threading.CancellationToken)">
+            <summary>Confirma el pago de una reserva y devuelve el código generado (RF-04).</summary>
+        </member>
+        <member name="M:Ceiba.LiveEvent.Reservations.Api.Controllers.ReservationController.Cancel(System.Guid,System.Threading.CancellationToken)">
+            <summary>Cancela una reserva (RF-05). La penalización (RN-07) la decide el dominio.</summary>
         </member>
         <member name="T:Ceiba.LiveEvent.Reservations.Api.Controllers.TodoItemsController">
             <summary>
@@ -33,6 +125,59 @@
         </member>
         <member name="M:Ceiba.LiveEvent.Reservations.Api.Controllers.TodoItemsController.Delete(System.Guid,System.Threading.CancellationToken)">
             <summary>Elimina una tarea.</summary>
+        </member>
+        <member name="T:Ceiba.LiveEvent.Reservations.Api.Cors.CorsExtensions">
+            <summary>
+            Configuración de CORS para permitir peticiones desde clientes web (SPA, etc.).
+            Mantiene el registro y el middleware fuera de <c>Program.cs</c>, igual que la
+            documentación OpenAPI.
+            </summary>
+        </member>
+        <member name="M:Ceiba.LiveEvent.Reservations.Api.Cors.CorsExtensions.AddApiCors(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>Registra la política de CORS a partir de la sección <c>Cors</c>.</summary>
+        </member>
+        <member name="M:Ceiba.LiveEvent.Reservations.Api.Cors.CorsExtensions.UseApiCors(Microsoft.AspNetCore.Builder.WebApplication)">
+            <summary>Aplica el middleware de CORS con la política por defecto.</summary>
+        </member>
+        <member name="T:Ceiba.LiveEvent.Reservations.Api.Cors.CorsOptions">
+            <summary>Opciones de CORS enlazadas desde la sección <c>Cors</c> de la configuración.</summary>
+        </member>
+        <member name="P:Ceiba.LiveEvent.Reservations.Api.Cors.CorsOptions.AllowedOrigins">
+            <summary>
+            Orígenes permitidos (p. ej. <c>https://mi-frontend.com</c>). Si está vacío se
+            permite cualquier origen (sin credenciales), útil para una API pública.
+            </summary>
+        </member>
+        <member name="P:Ceiba.LiveEvent.Reservations.Api.Cors.CorsOptions.AllowCredentials">
+            <summary>
+            Permite el envío de credenciales (cookies / cabecera Authorization). Solo aplica
+            cuando se especifican orígenes concretos; no es compatible con "cualquier origen".
+            </summary>
+        </member>
+        <member name="T:Ceiba.LiveEvent.Reservations.Api.Messages.IMessageService">
+            <summary>
+            Acceso de solo lectura al catálogo de mensajes (Resources/messages.json),
+            localizado por clave con notación de puntos (p. ej. <c>"reservation.confirmed"</c>).
+            </summary>
+        </member>
+        <member name="M:Ceiba.LiveEvent.Reservations.Api.Messages.IMessageService.Get(System.String)">
+            <summary>Devuelve el mensaje asociado a la clave, o <c>[clave]</c> si no existe.</summary>
+        </member>
+        <member name="M:Ceiba.LiveEvent.Reservations.Api.Messages.IMessageService.Get(System.String,System.Object[])">
+            <summary>Devuelve el mensaje formateado con <see cref="M:System.String.Format(System.String,System.Object[])"/>.</summary>
+        </member>
+        <member name="T:Ceiba.LiveEvent.Reservations.Api.Messages.MessageCatalogExtensions">
+            <summary>
+            Carga el catálogo de mensajes desde <c>Resources/messages.json</c> y registra
+            <see cref="T:Ceiba.LiveEvent.Reservations.Api.Messages.IMessageService"/>. El JSON puede anidarse: las claves se aplanan con
+            puntos (<c>{ "error": { "notFound": ... } }</c> → <c>"error.notFound"</c>).
+            </summary>
+        </member>
+        <member name="T:Ceiba.LiveEvent.Reservations.Api.Messages.MessageService">
+            <summary>
+            Implementación en memoria de <see cref="T:Ceiba.LiveEvent.Reservations.Api.Messages.IMessageService"/>. El catálogo se carga una
+            sola vez al arrancar (ver <see cref="T:Ceiba.LiveEvent.Reservations.Api.Messages.MessageCatalogExtensions"/>).
+            </summary>
         </member>
         <member name="T:Ceiba.LiveEvent.Reservations.Api.OpenApi.ApiDocumentationOptions">
             <summary>
