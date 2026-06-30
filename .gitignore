@@ -1,2 +1,25 @@
-*.config
-*.v2
+# Lista blanca: se ignora todo por defecto y solo se versionan los tipos permitidos.
+
+# 1. Ignorar todos los archivos.
+*
+
+# 2. Permitir descender a los subdirectorios (si no, no se vería nada dentro).
+!*/
+
+# 3. Volver a incluir solo los tipos de archivo permitidos.
+!*.cs
+!*.csproj
+!*.json
+!*.md
+!*.yml
+!*.slnx
+!*.sql
+
+# 4. Conservar el propio .gitignore.
+!.gitignore
+
+# 5. Re-ignorar salida de compilación y artefactos (binarios/compilados),
+#    aunque contengan archivos de los tipos permitidos.
+bin/
+obj/
+.vs/
